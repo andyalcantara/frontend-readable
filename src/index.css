@@ -12,3 +12,160 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+
+.category {
+  display: flex;
+  flex-direction: row;
+  margin: auto;
+  max-width: 500px;
+  border-radius: 5px;
+  border: 1px solid lightsalmon;
+  margin-top: 20px;
+}
+
+.category-item {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  margin-left: 15px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.post {
+  display: flex;
+  flex-direction: row;
+  margin: auto;
+  margin-top: 15px;
+  align-items: center;
+  justify-content: space-around;
+  border: 1px solid lightsalmon;
+  border-radius: 5px;
+  width: 70%;
+  min-height: 100px;
+}
+
+.post-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.post-button {
+  height: 40px;
+  border: 1px solid lightsalmon;
+  border-radius: 5px;
+  width: 130px;
+  color: darkorange;
+  font-size: 15px;
+}
+
+.post-form {
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+  max-width: 600px;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 10px;
+  width: 100%;
+}
+
+.form-title {
+  margin-top: 10px;
+  height: 40px;
+  border-radius: 5px;
+  border-width: 1px;
+  border-color: darkorange;
+}
+
+.form-body {
+  height: 100px;
+  border-radius: 5px;
+  border-color: darkorange;
+}
+
+.form-button {
+  height: 40px;
+  border: 1px solid darkorange;
+  border-radius: 5px;
+  width: 100px;
+  background-color: orange;
+  color: white;
+  font-size: 15px;
+}
+
+.post-detail-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.post-detail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: auto;
+  margin-top: 20px;
+  border: 1px solid lightsalmon;
+  max-width: 800px;
+  border-radius: 5px;
+  padding: 30px;
+}
+
+.comments-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.comment-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-left: 100px;
+  margin-top: 15px;
+  border: 1px solid lightsalmon;
+  border-radius: 5px;
+  min-width: 700px;
+}
+
+.comment-button {
+  height: 40px;
+  width: 100px;
+  margin-left: 5px;
+  border-radius: 5px;
+  border: 1px solid lightsalmon;
+  color: darkorange;
+  font-size: 15px;
+}
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  margin-top: 40px;
+  height: 100px;
+}
+
+.score-button {
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  height: 40px;
+  width: 100px;
+  font-size: 15px;
+  border: 1px solid lightsalmon;
+  color: lightsalmon;
+}
+
+.date-button {
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  height: 40px;
+  width: 100px;
+  font-size: 15px;
+  border: 1px solid lightsalmon;
+  color: lightsalmon;
+}
