@@ -71,29 +71,37 @@ class PostDetail extends Component {
         e.preventDefault();
 
         if (isEdit) {
-            dispatch(handleCommentEdit(id, Date.now(), comment))
-            this.setState({
-                showForm: false,
-                isEdit: false,
-                comment: '',
-                id: ''
-            });
-        } else {
-            let newComment = {
-                id: generateUID(),
-                parentId: post.id,
-                timestamp: Date.now(),
-                body: comment,
-                author: 'me'
+            if (comment === '') {
+                alert('Sorry but all fields are required!');
+            } else {
+                dispatch(handleCommentEdit(id, Date.now(), comment))
+                this.setState({
+                    showForm: false,
+                    isEdit: false,
+                    comment: '',
+                    id: ''
+                });
             }
-    
-            dispatch(handleNewComment(newComment));
-            this.setState({
-                showForm: false,
-                isEdit: false,
-                comment: '',
-                id: ''
-            });
+        } else {
+            if (comment === '') {
+                alert('Sorry but all fields are required!');
+            } else {
+                let newComment = {
+                    id: generateUID(),
+                    parentId: post.id,
+                    timestamp: Date.now(),
+                    body: comment,
+                    author: 'me'
+                }
+        
+                dispatch(handleNewComment(newComment));
+                this.setState({
+                    showForm: false,
+                    isEdit: false,
+                    comment: '',
+                    id: ''
+                });
+            }
         }
     }
 
@@ -154,14 +162,18 @@ class PostDetail extends Component {
 
         e.preventDefault();
         if (isEdit) {
-            dispatch(handleEditPost(id, title, body));
-            this.setState({
-                showPostForm: false,
-                title: '',
-                body: '',
-                isEdit: false,
-                id: ''
-            });
+            if (title === '' || body === '') {
+                alert('Sorry but all fields are required!');
+            } else {
+                dispatch(handleEditPost(id, title, body));
+                this.setState({
+                    showPostForm: false,
+                    title: '',
+                    body: '',
+                    isEdit: false,
+                    id: ''
+                });
+            }
         } 
     }
 

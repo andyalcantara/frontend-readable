@@ -46,14 +46,18 @@ class CategoriesList extends Component {
 
         e.preventDefault();
         if (isEdit) {
-            this.props.dispatch(handleEditPost(id, title, body));
-            this.setState({
-                showForm: false,
-                title: '',
-                body: '',
-                isEdit: false,
-                id: ''
-            });
+            if (title === '' || body === '') {
+                alert('Sorry but all fields are required!');
+            } else {
+                this.props.dispatch(handleEditPost(id, title, body));
+                this.setState({
+                    showForm: false,
+                    title: '',
+                    body: '',
+                    isEdit: false,
+                    id: ''
+                });
+            }
         }
     }
 

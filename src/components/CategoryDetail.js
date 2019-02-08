@@ -62,30 +62,38 @@ class CategoryDetail extends React.Component {
 
         e.preventDefault();
         if (isEdit) {
-            dispatch(handleEditPost(id, title, body));
-            this.setState({
-                showForm: false,
-                title: '',
-                body: '',
-                isEdit: false,
-                id: ''
-            });
-        } else {
-            let newPost = {
-                id: generateUID(),
-                timestamp: Date.now(),
-                title: title,
-                body: body,
-                author: 'me',
-                category: category
+            if (title === '' || body === '') {
+                alert('Sorry but all fields are required!');
+            } else {
+                dispatch(handleEditPost(id, title, body));
+                this.setState({
+                    showForm: false,
+                    title: '',
+                    body: '',
+                    isEdit: false,
+                    id: ''
+                });
             }
-            dispatch(handleNewPost(newPost));
-            this.setState({
-                showForm: false,
-                title: '',
-                body: '',
-                isEdit: false
-            });
+        } else {
+            if (title === '' || body === '') {
+                alert('Sorry but all fields are required!');
+            } else {
+                let newPost = {
+                    id: generateUID(),
+                    timestamp: Date.now(),
+                    title: title,
+                    body: body,
+                    author: 'me',
+                    category: category
+                }
+                dispatch(handleNewPost(newPost));
+                this.setState({
+                    showForm: false,
+                    title: '',
+                    body: '',
+                    isEdit: false
+                });
+            }
         }
     }
 
