@@ -8,7 +8,7 @@ import { upVote, downVote } from '../actions/posts';
 import { deletePost, editPost } from '../actions/posts';
 import { getComments, addComment, deleteComment, editComment, voteCommentsDown, voteCommentsUp } from '../actions/comments';
 
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 
 import NoMatch from './NoMatch';
 
@@ -144,7 +144,7 @@ class PostDetail extends Component {
     }
 
     handlePostDelete = (id) => {
-        const { dispatch } = this.props;
+        const { dispatch, lastCategory } = this.props;
 
         fetch(url + '/posts/' + id, {
             method: 'DELETE',
@@ -155,7 +155,7 @@ class PostDetail extends Component {
         }).then(response => response.json())
           .then(data => {
               dispatch(deletePost(id));
-
+              this.props.history.push(`/${lastCategory}`);
           });
     }
 
@@ -321,8 +321,6 @@ class PostDetail extends Component {
             } else {
                 word = 'comment';
             }
-        } else {
-            return <NoMatch />
         }
 
         return (
@@ -405,15 +403,20 @@ class PostDetail extends Component {
 }
 
 function mapStateToProps({ posts, comments, categories }, { match }) {
-    
+
     const { id } = match.params;
     let commentsArray = Object.keys(comments).map(key => comments[key]);
     let acComments = commentsArray.filter(comment => comment.parentId === id);
 
     let links = [];
+    let lastCategory = '';
 
     if (categories['categories'] && posts[id]) {
         links = categories['categories'].filter(cat => cat.name !== posts[id].category);
+    }
+
+    if (posts[id]) {
+        lastCategory = posts[id].category
     }
 
     return {
@@ -421,8 +424,9 @@ function mapStateToProps({ posts, comments, categories }, { match }) {
         comments: acComments,
         orComments: comments,
         storePosts: posts,
-        links
+        links,
+        lastCategory: lastCategory
     }
 }
 
-export default connect(mapStateToProps)(PostDetail);
+export default withRouter(connect(mapStateToProps)(PostDetail));
