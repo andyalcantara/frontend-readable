@@ -9,41 +9,15 @@ import PostDetail from './PostDetail';
 import NoMatch from './NoMatch';
 
 import { connect } from 'react-redux';
-import { getCategories } from '../actions/categories';
-import { getPosts } from '../actions/posts';
-
-import { url } from '../utils/helpers';
+import { handleInitialCategories, handleInitialPosts } from '../actions/shared';
 
 class App extends Component {
 
   componentDidMount() {
     const { dispatch } = this.props;
 
-    fetch(url + '/categories', {
-      method: 'GET',
-      headers: { 'Authorization': 'readable-aag'},
-      mode: 'cors',
-      cache: 'default'
-    }).then((response) => response.json())
-      .then(data => {
-        dispatch(getCategories(data.categories));
-      });
-
-    fetch(url + '/posts', {
-      method: 'GET',
-      headers: { 'Authorization': 'readable-aag'},
-      mode: 'cors',
-      cache: 'default'
-    }).then((response) => response.json())
-      .then((posts) => {
-        let newPosts = posts.map(post => {
-          return {
-            [post.id]: post
-          }
-        });
-        let myPosts = Object.assign({}, ...newPosts);
-        dispatch(getPosts(myPosts));
-      });
+    dispatch(handleInitialCategories());
+    dispatch(handleInitialPosts());
   }
 
   render() {
@@ -59,12 +33,6 @@ class App extends Component {
         </div>
       </Router>
     );
-  }
-}
-
-function mapDispatchToProps(dispatch) {
-  return {
-    receivePosts: () => dispatch(getPosts())
   }
 }
 

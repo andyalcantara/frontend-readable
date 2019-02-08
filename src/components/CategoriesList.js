@@ -5,9 +5,12 @@ import Category from './Category';
 import Post from './Post';
 
 import { Link } from 'react-router-dom';
-import { url } from '../utils/helpers';
 
-import { editPost, upVote, downVote, deletePost } from '../actions/posts';
+import { 
+    handleWithSharedVoteUp, 
+    handleWithSharedVoteDown, 
+    handleDeletePost, 
+    handleEditPost } from '../actions/shared';
 
 class CategoriesList extends Component {
 
@@ -39,67 +42,27 @@ class CategoriesList extends Component {
     }
 
     handleSubmit = (e) => {
-        const { title, body, isEdit, id } = this.state;
-        const { dispatch } = this.props;
+        const { id, isEdit, title, body} = this.state;
 
         e.preventDefault();
         if (isEdit) {
-            let newPost = {
-                title: title,
-                body: body,
-            }
-            fetch(url + '/posts/' + id, {
-                method: 'PUT',
-                headers: { 
-                    'Authorization': 'readable-aag',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(newPost)
-            }).then(response => response.json())
-              .then(data => {
-                  console.log(data);
-                  dispatch(editPost(id, newPost.title, newPost.body));
-                  this.setState({
-                      showForm: false,
-                      title: '',
-                      body: '',
-                      isEdit: false,
-                      id: ''
-                  });
-              })
+            this.props.dispatch(handleEditPost(id, title, body));
+            this.setState({
+                showForm: false,
+                title: '',
+                body: '',
+                isEdit: false,
+                id: ''
+            });
         }
     }
 
     handleVoteUp = (id) => {
-        const { dispatch } = this.props;
-
-        fetch(url + '/posts/' + id, {
-            method: 'POST',
-            headers: { 
-                'Authorization': 'readable-aag',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({option: 'upVote'})
-        }).then(response => response.json())
-          .then(() => {
-              dispatch(upVote(id));
-          });
+        this.props.dispatch(handleWithSharedVoteUp(id));
     }
 
     handleVoteDown = (id) => {
-        const { dispatch } = this.props;
-
-        fetch(url + '/posts/' + id, {
-            method: 'POST',
-            headers: { 
-                'Authorization': 'readable-aag',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({option: 'downVote'})
-        }).then(response => response.json())
-          .then(() => {
-              dispatch(downVote(id));
-          })
+        this.props.dispatch(handleWithSharedVoteDown(id))
     }
 
     handleEdit = (id) => {
@@ -117,19 +80,7 @@ class CategoriesList extends Component {
     }
 
     handleDelete = (id) => {
-        const { dispatch } = this.props;
-
-        fetch(url + '/posts/' + id, {
-            method: 'DELETE',
-            headers: { 
-                'Authorization': 'readable-aag',
-                'Content-Type': 'application/json'
-            }
-        }).then(response => response.json())
-          .then(data => {
-              console.log(data);
-              dispatch(deletePost(id));
-          });
+        this.props.dispatch(handleDeletePost(id));
     }
 
     render() {

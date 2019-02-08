@@ -321,6 +321,8 @@ class PostDetail extends Component {
             } else {
                 word = 'comment';
             }
+        } else {
+            return <NoMatch />
         }
 
         return (

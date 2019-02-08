@@ -3,9 +3,13 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { generateUID } from '../utils/helpers';
 
-import { addPost, upVote, downVote, editPost, deletePost } from '../actions/posts';
+import { 
+    handleEditPost, 
+    handleNewPost, 
+    handleWithSharedVoteDown, 
+    handleWithSharedVoteUp, 
+    handleDeletePost } from '../actions/shared';
 
-import { url } from '../utils/helpers';
 import { Link } from 'react-router-dom';
 
 import Post from './Post';
@@ -20,6 +24,18 @@ class CategoryDetail extends React.Component {
         sortByDate: true,
         isEdit: false,
         id: ''
+    }
+
+    sortByDate = () => {
+        this.setState({
+            sortByDate: true,
+        });
+    }
+
+    sortByScore = () => {
+        this.setState({
+            sortByDate: false,
+        })
     }
 
     handleForm = () => {
@@ -46,29 +62,14 @@ class CategoryDetail extends React.Component {
 
         e.preventDefault();
         if (isEdit) {
-            let newPost = {
-                title: title,
-                body: body,
-            }
-            fetch(url + '/posts/' + id, {
-                method: 'PUT',
-                headers: { 
-                    'Authorization': 'readable-aag',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(newPost)
-            }).then(response => response.json())
-              .then(data => {
-                  console.log(data);
-                  dispatch(editPost(id, newPost.title, newPost.body));
-                  this.setState({
-                      showForm: false,
-                      title: '',
-                      body: '',
-                      isEdit: false,
-                      id: ''
-                  });
-              })
+            dispatch(handleEditPost(id, title, body));
+            this.setState({
+                showForm: false,
+                title: '',
+                body: '',
+                isEdit: false,
+                id: ''
+            });
         } else {
             let newPost = {
                 id: generateUID(),
@@ -78,69 +79,22 @@ class CategoryDetail extends React.Component {
                 author: 'me',
                 category: category
             }
-    
-            fetch(url + '/posts', {
-                method: 'POST',
-                headers: { 
-                    'Authorization': 'readable-aag',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(newPost)
-            }).then(response => response.json())
-              .then(data => {
-                dispatch(addPost(data));
-                this.setState({
-                    showForm: false,
-                    title: '',
-                    body: '',
-                    isEdit: false
-                });
-              });
+            dispatch(handleNewPost(newPost));
+            this.setState({
+                showForm: false,
+                title: '',
+                body: '',
+                isEdit: false
+            });
         }
     }
 
     handleVoteUp = (id) => {
-        const { dispatch } = this.props;
-
-        fetch(url + '/posts/' + id, {
-            method: 'POST',
-            headers: { 
-                'Authorization': 'readable-aag',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({option: 'upVote'})
-        }).then(response => response.json())
-          .then(() => {
-              dispatch(upVote(id));
-          });
+        this.props.dispatch(handleWithSharedVoteUp(id));
     }
 
     handleVoteDown = (id) => {
-        const { dispatch } = this.props;
-
-        fetch(url + '/posts/' + id, {
-            method: 'POST',
-            headers: { 
-                'Authorization': 'readable-aag',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({option: 'downVote'})
-        }).then(response => response.json())
-          .then(() => {
-              dispatch(downVote(id));
-          })
-    }
-
-    sortByDate = () => {
-        this.setState({
-            sortByDate: true,
-        });
-    }
-
-    sortByScore = () => {
-        this.setState({
-            sortByDate: false,
-        })
+        this.props.dispatch(handleWithSharedVoteDown(id));
     }
 
     handleEdit = (id) => {
@@ -158,19 +112,7 @@ class CategoryDetail extends React.Component {
     }
 
     handleDelete = (id) => {
-        const { dispatch } = this.props;
-
-        fetch(url + '/posts/' + id, {
-            method: 'DELETE',
-            headers: { 
-                'Authorization': 'readable-aag',
-                'Content-Type': 'application/json'
-            }
-        }).then(response => response.json())
-          .then(data => {
-              console.log(data);
-              dispatch(deletePost(id));
-          });
+        this.props.dispatch(handleDeletePost(id));
     }
 
     render() {
