@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import '../App.css';
 
-import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
 import CategoriesList from './CategoriesList';
 import CategoryDetail from './CategoryDetail';
 import PostDetail from './PostDetail';
+import NoMatch from './NoMatch';
 
 import { connect } from 'react-redux';
 import { getCategories } from '../actions/categories';
@@ -49,12 +50,21 @@ class App extends Component {
     return (
       <Router>
         <div className="App">
-          <Route path="/" exact component={CategoriesList} />
-          <Route path="/:category" exact component={CategoryDetail} />
-          <Route path="/:category/:id" exact component={PostDetail} />
+          <Switch>
+            <Route path="/" exact component={CategoriesList} />
+            <Route path="/:category" exact component={CategoryDetail} />
+            <Route path="/:category/:id" exact component={PostDetail} />
+            <Route component={NoMatch} />
+          </Switch>
         </div>
       </Router>
     );
+  }
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    receivePosts: () => dispatch(getPosts())
   }
 }
 

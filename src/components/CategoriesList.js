@@ -8,7 +8,7 @@ class CategoriesList extends Component {
     render() {
 
         const { categories, posts } = this.props;
-
+        
         return (
             <div>
                 <div>
@@ -16,8 +16,8 @@ class CategoriesList extends Component {
 
                 </div>
 
-                {
-                    categories.map((category) => (
+                {categories
+                    ? categories.map((category) => (
                         <Link key={category.name} to={`/${category.path}`} style={{textDecoration: 'none', color: 'darkorange'}}>
                             <div className="category">
                                 <h3 style={{marginLeft: 20}}>{category.name}</h3>
@@ -25,6 +25,7 @@ class CategoriesList extends Component {
                             </div>
                         </Link>
                     ))
+                    : <div><p>NO Categories availables</p></div>
                 }
 
                 <h2>All Posts</h2>
@@ -41,8 +42,9 @@ class CategoriesList extends Component {
 }
 
 function mapStateToProps({ categories, posts }) {
+    console.log(categories['categories'], 'my categories')
     return {
-        categories: Object.keys(categories).map(key => categories[key]),
+        categories: categories['categories'],
         posts: Object.keys(posts).map(key => posts[key])
     }
 }

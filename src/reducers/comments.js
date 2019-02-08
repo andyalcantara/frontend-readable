@@ -23,10 +23,11 @@ export default function commentsReducer(state = {}, action) {
 
         case DELETE_COMMENT:
 
-            delete state[action.id];
+            let updatedState = {...state};
+            delete updatedState[action.id];
 
             return {
-                ...state,
+                ...updatedState,
             }
 
         case EDIT_COMMENT:

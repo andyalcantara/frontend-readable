@@ -31,10 +31,11 @@ export default function postsReducer(state = {}, action) {
 
         case DELETE_POST:
 
-            delete state[action.id]
+            let updatedState = {...state};
+            delete updatedState[action.id]
 
             return {
-                ...state
+                ...updatedState
             }
 
         case ADD_COMMENT:

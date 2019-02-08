@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { url, generateUID } from '../utils/helpers';
 import { upVote, downVote } from '../actions/posts';
 import { getComments, addComment, deleteComment, editComment, voteCommentsDown, voteCommentsUp } from '../actions/comments';
+import NoMatch from './NoMatch';
 
 class PostDetail extends Component {
 
@@ -228,7 +229,9 @@ class PostDetail extends Component {
             } else {
                 word = 'comment';
             }
-        } 
+        } else {
+            return <NoMatch />
+        }
 
         return (
             <div className="post-detail-container">

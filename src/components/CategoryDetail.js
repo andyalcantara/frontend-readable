@@ -6,8 +6,10 @@ import { generateUID } from '../utils/helpers';
 import { addPost, upVote, downVote, editPost, deletePost } from '../actions/posts';
 
 import { url } from '../utils/helpers';
+import { Link } from 'react-router-dom';
 
 import Post from './Post';
+import NoMatch from './NoMatch';
 
 class CategoryDetail extends React.Component {
 
@@ -173,10 +175,22 @@ class CategoryDetail extends React.Component {
 
     render() {
         const { showForm, title, body, sortByDate } = this.state;
-        const { posts, category, postsByScore } = this.props;
+        const { posts, category, postsByScore, isCategory, categoryLinks } = this.props;
+
+        if (isCategory === false) {
+            return <NoMatch />
+        } 
         
         return (
             <div>
+                <div style={{display: 'flex', flexDirection: 'row', width: '40%', justifyContent: 'space-around', marginTop: 30, marginBottom: 30}}>
+                    <Link style={{textDecoration: 'none', color: 'orange'}} to="/">HOME</Link>
+                    {
+                        categoryLinks.map((acCategory) => (
+                            <Link style={{textDecoration: 'none', color: 'orange'}} key={acCategory.name} to={`/${acCategory.path}`}>{acCategory.name.toUpperCase()}</Link>
+                        ))
+                    }
+                </div>
                 <div className="post-header">
                     <h2> Category: {category}</h2>
                     <div>
@@ -226,15 +240,28 @@ class CategoryDetail extends React.Component {
     }
 }
 
-function mapStateToProps({ posts }, { match }) {
+function mapStateToProps({ posts, categories }, { match }) {
     const { category } = match.params;
     let postsArray = Object.keys(posts).map(key => posts[key]);
+    let isCategory = true;
+    let links = [];
+
+    if (categories['categories']) {
+        let paths = categories['categories'].map(category => category.path);
+        if (paths.includes(category) === false) {
+            isCategory = false;
+        }
+
+        links = categories['categories'].filter(acCategory => acCategory.name !== category);
+    }
     
     return {
         category,
         posts: postsArray.filter((post) => post.category === category).sort((a, b) => b.timestamp - a.timestamp),
         postsByScore: postsArray.filter((post) => post.category === category).sort((a, b) => b.voteScore - a.voteScore),
-        storePosts: posts
+        storePosts: posts,
+        isCategory,
+        categoryLinks: links
     }
 }
 
