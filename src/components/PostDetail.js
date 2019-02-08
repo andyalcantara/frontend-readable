@@ -1,16 +1,26 @@
 import React, { Component } from 'react';
 
 import { connect } from 'react-redux';
+
 import { url, generateUID } from '../utils/helpers';
+
 import { upVote, downVote } from '../actions/posts';
+import { deletePost, editPost } from '../actions/posts';
 import { getComments, addComment, deleteComment, editComment, voteCommentsDown, voteCommentsUp } from '../actions/comments';
+
+import { Link } from 'react-router-dom';
+
 import NoMatch from './NoMatch';
 
 class PostDetail extends Component {
 
     state = {
         showForm: false,
+        showPostForm: false,
         comment: '',
+        title: '',
+        body: '',
+        isPostEdit: false,
         isEdit: false,
         id: ''
     }
@@ -33,6 +43,18 @@ class PostDetail extends Component {
                   dispatch(getComments(acComments));
               });
         }
+    }
+
+    handleTitle = (e) => {
+        this.setState({
+            title: e.target.value
+        });
+    }
+
+    handleBody = (e) => {
+        this.setState({
+            body: e.target.value
+        });
     }
 
     showForm = () => {
@@ -105,6 +127,36 @@ class PostDetail extends Component {
                 });
               });
         }
+    }
+
+    handlePostEdit = (id) => {
+        const { storePosts } = this.props;
+
+        if (storePosts) {
+            this.setState({
+                showPostForm: true,
+                title: storePosts[id].title,
+                body: storePosts[id].body,
+                id: id,
+                isEdit: true
+            });
+        }
+    }
+
+    handlePostDelete = (id) => {
+        const { dispatch } = this.props;
+
+        fetch(url + '/posts/' + id, {
+            method: 'DELETE',
+            headers: { 
+                'Authorization': 'readable-aag',
+                'Content-Type': 'application/json'
+            }
+        }).then(response => response.json())
+          .then(data => {
+              dispatch(deletePost(id));
+
+          });
     }
 
     handleEdit = (id) => {
@@ -198,9 +250,49 @@ class PostDetail extends Component {
           });
     }
 
+    handlePostSubmit = (e) => {
+        const { title, body, isEdit, id } = this.state;
+        const { dispatch } = this.props;
+
+        e.preventDefault();
+        if (isEdit) {
+            let newPost = {
+                title: title,
+                body: body,
+            }
+            fetch(url + '/posts/' + id, {
+                method: 'PUT',
+                headers: { 
+                    'Authorization': 'readable-aag',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newPost)
+            }).then(response => response.json())
+              .then(data => {
+                  console.log(data);
+                  dispatch(editPost(id, newPost.title, newPost.body));
+                  this.setState({
+                      showPostForm: false,
+                      title: '',
+                      body: '',
+                      isEdit: false,
+                      id: ''
+                  });
+              })
+        } 
+    }
+
+    closeForm = () => {
+        this.setState({
+            showPostForm: false,
+            title: '',
+            body: ''
+        });
+    }
+
     render() {
-        const { post, comments, dispatch } = this.props;
-        const { showForm } = this.state;
+        const { post, comments, dispatch, links } = this.props;
+        const { showForm, showPostForm, title, body } = this.state;
 
         let time = '';
         let word = '';
@@ -235,6 +327,14 @@ class PostDetail extends Component {
 
         return (
             <div className="post-detail-container">
+                <div style={{display: 'flex', flexDirection: 'row', width: '40%', justifyContent: 'space-around', marginTop: 30, marginBottom: 30}}>
+                    <Link style={{textDecoration: 'none', color: 'orange'}} to="/">HOME</Link>
+                    {
+                        links.map(category => (
+                            <Link key={category.name} style={{textDecoration: 'none', color: 'orange'}} to={`/${category.path}`}>{category.name.toUpperCase()}</Link>
+                        ))
+                    }
+                </div>
                 <div className="post-detail">
                     <p>{post ? time : ''}</p>
                     <h2>{post ? post.author : ''}</h2>
@@ -244,6 +344,8 @@ class PostDetail extends Component {
                     <p> Score: {post ? post.voteScore : ''}</p>
                     <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '100%'}}>
                         <button className="comment-button" onClick={this.showForm}>Comment</button>
+                        <button className="comment-button" onClick={() => this.handlePostEdit(post.id)}>Edit Post</button>
+                        <button className="comment-button" onClick={() => this.handlePostDelete(post.id)}>Delete Post</button>
                         <div style={{border: '1px solid orange', borderRadius: 5}}>
                             <button onClick={() => this.handleVoteUp(post.id)}>Vote up</button>
                                 <p>Score: {post ? post.voteScore : ''}</p>
@@ -251,6 +353,21 @@ class PostDetail extends Component {
                         </div>
                     </div>
                 </div>
+                {showPostForm
+                    ? <div>
+                            <button type="button" onClick={this.closeForm}>Cancel</button>
+                            <form onSubmit={this.handlePostSubmit}  className="post-form">
+                                <label style={{marginTop: 30}}>Title:</label>
+                                <input className="form-title" style={{width: '100%', fontSize: 15}} type="text" value={title} onChange={this.handleTitle} />
+
+                                <label style={{marginTop: 30}}>Body:</label>
+                                <textarea className="form-body" style={{width: '100%', fontSize: 15}} type="text" value={body} onChange={this.handleBody} ></textarea>
+
+                                <button className="form-button" style={{marginTop: 10}} type="submit">Submit</button>
+                            </form>
+                        </div>
+                    : <div></div>
+                }
                 {showForm
                     ? <div className="comment-form">
                         <form onSubmit={this.handleSubmit}>
@@ -287,17 +404,24 @@ class PostDetail extends Component {
     }
 }
 
-function mapStateToProps({ posts, comments }, { match }) {
+function mapStateToProps({ posts, comments, categories }, { match }) {
     const { id } = match.params;
     let commentsArray = Object.keys(comments).map(key => comments[key]);
     let acComments = commentsArray.filter(comment => comment.parentId === id);
 
-    console.log(comments);
+    let links = [];
+    if (categories['categories'] && posts[id]) {
+        console.log(categories['categories']);
+        console.log(posts[id]);
+        links = categories['categories'].filter(cat => cat.name !== posts[id].category);
+    }
 
     return {
         post: posts[id],
         comments: acComments,
-        orComments: comments
+        orComments: comments,
+        storePosts: posts,
+        links
     }
 }
 
