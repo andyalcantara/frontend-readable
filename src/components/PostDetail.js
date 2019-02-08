@@ -2,15 +2,22 @@ import React, { Component } from 'react';
 
 import { connect } from 'react-redux';
 
-import { url, generateUID } from '../utils/helpers';
-
-import { upVote, downVote } from '../actions/posts';
-import { deletePost, editPost } from '../actions/posts';
-import { getComments, addComment, deleteComment, editComment, voteCommentsDown, voteCommentsUp } from '../actions/comments';
+import { generateUID } from '../utils/helpers';
 
 import { Link, withRouter } from 'react-router-dom';
 
 import NoMatch from './NoMatch';
+import { 
+    receiveComments, 
+    handleCommentEdit,
+    handleNewComment,
+    handleDeleteComment,
+    handleVoteUpComment,
+    handleVoteDownComment,
+    handleDeletePost,
+    handleWithSharedVoteUp,
+    handleWithSharedVoteDown,
+    handleEditPost } from '../actions/shared';
 
 class PostDetail extends Component {
 
@@ -29,19 +36,7 @@ class PostDetail extends Component {
         const { post, dispatch } = this.props;
 
         if (post) {
-            fetch(url + '/posts/' + post.id + '/comments', {
-                method: 'GET',
-                headers: { 'Authorization': 'readable-aag'}
-            }).then(response => response.json())
-              .then(comments => {
-                  let newComments = comments.map((comment) => {
-                      return {
-                          [comment.id]: comment
-                      }
-                  });
-                  let acComments = Object.assign({}, ...newComments);
-                  dispatch(getComments(acComments));
-              });
+            dispatch(receiveComments(post.id));
         }
     }
 
@@ -76,29 +71,13 @@ class PostDetail extends Component {
         e.preventDefault();
 
         if (isEdit) {
-
-            let editedComment = {
-                timestamp: Date.now(),
-                body: comment,
-            }
-
-            fetch(url + '/comments/' + id, {
-                method: 'PUT',
-                headers: { 
-                    'Authorization': 'readable-aag',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(editedComment)
-            }).then(response => response.json())
-              .then(data => {
-                  dispatch(editComment(id, data));
-                  this.setState({
-                      showForm: false,
-                      isEdit: false,
-                      comment: '',
-                      id: ''
-                  });
-              })
+            dispatch(handleCommentEdit(id, Date.now(), comment))
+            this.setState({
+                showForm: false,
+                isEdit: false,
+                comment: '',
+                id: ''
+            });
         } else {
             let newComment = {
                 id: generateUID(),
@@ -108,24 +87,13 @@ class PostDetail extends Component {
                 author: 'me'
             }
     
-            fetch(url + '/comments', {
-                method: 'POST',
-                headers: { 
-                    'Authorization': 'readable-aag',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(newComment)
-            }).then(response => response.json())
-              .then(data => {
-                  console.log(data);
-                  dispatch(addComment(data));
-                  this.setState({
-                    showForm: false,
-                    isEdit: false,
-                    comment: '',
-                    id: ''
-                });
-              });
+            dispatch(handleNewComment(newComment));
+            this.setState({
+                showForm: false,
+                isEdit: false,
+                comment: '',
+                id: ''
+            });
         }
     }
 
@@ -144,19 +112,9 @@ class PostDetail extends Component {
     }
 
     handlePostDelete = (id) => {
-        const { dispatch, lastCategory } = this.props;
-
-        fetch(url + '/posts/' + id, {
-            method: 'DELETE',
-            headers: { 
-                'Authorization': 'readable-aag',
-                'Content-Type': 'application/json'
-            }
-        }).then(response => response.json())
-          .then(data => {
-              dispatch(deletePost(id));
-              this.props.history.push(`/${lastCategory}`);
-          });
+        const { lastCategory } = this.props;
+        this.props.dispatch(handleDeletePost(id));
+        this.props.history.push(`/${lastCategory}`);
     }
 
     handleEdit = (id) => {
@@ -171,83 +129,23 @@ class PostDetail extends Component {
     }
 
     handleDelete = (id) => {
-        const { dispatch } = this.props;
-
-        fetch(url + '/comments/' + id, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': 'readable-aag',
-                'Content-Type': 'application/json'
-            }
-        }).then(response => response.json())
-          .then(data => {
-              console.log(data, 'After deleting');
-                dispatch(deleteComment(id, data.parentId))
-          });
+        this.props.dispatch(handleDeleteComment(id));
     }
 
     handleVoteUp = (id) => {
-        const { dispatch } = this.props;
-
-        fetch(url + '/posts/' + id, {
-            method: 'POST',
-            headers: { 
-                'Authorization': 'readable-aag',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({option: 'upVote'})
-        }).then(response => response.json())
-          .then(() => {
-              dispatch(upVote(id));
-          });
+        this.props.dispatch(handleWithSharedVoteUp(id));
     }
 
     handleVoteDown = (id) => {
-        const { dispatch } = this.props;
-
-        fetch(url + '/posts/' + id, {
-            method: 'POST',
-            headers: { 
-                'Authorization': 'readable-aag',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({option: 'downVote'})
-        }).then(response => response.json())
-          .then(() => {
-              dispatch(downVote(id));
-          })
+        this.props.dispatch(handleWithSharedVoteDown(id));
     }
 
     voteCommentUp = (id) => {
-        const { dispatch } = this.props;
-
-        fetch(url + '/comments/' + id, {
-            method: 'POST',
-            headers: {
-                'Authorization': 'readable-aag',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ option: 'upVote'})
-        }).then(response => response.json())
-          .then(() => {
-              dispatch(voteCommentsUp(id));
-          });
+        this.props.dispatch(handleVoteUpComment(id));
     }
 
     voteCommentDown = (id) => {
-        const { dispatch } = this.props;
-
-        fetch(url + '/comments/' + id, {
-            method: 'POST',
-            headers: {
-                'Authorization': 'readable-aag',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ option: 'downVote'})
-        }).then(response => response.json())
-          .then(() => {
-              dispatch(voteCommentsDown(id));
-          });
+        this.props.dispatch(handleVoteDownComment(id));
     }
 
     handlePostSubmit = (e) => {
@@ -256,29 +154,14 @@ class PostDetail extends Component {
 
         e.preventDefault();
         if (isEdit) {
-            let newPost = {
-                title: title,
-                body: body,
-            }
-            fetch(url + '/posts/' + id, {
-                method: 'PUT',
-                headers: { 
-                    'Authorization': 'readable-aag',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(newPost)
-            }).then(response => response.json())
-              .then(data => {
-                  console.log(data);
-                  dispatch(editPost(id, newPost.title, newPost.body));
-                  this.setState({
-                      showPostForm: false,
-                      title: '',
-                      body: '',
-                      isEdit: false,
-                      id: ''
-                  });
-              })
+            dispatch(handleEditPost(id, title, body));
+            this.setState({
+                showPostForm: false,
+                title: '',
+                body: '',
+                isEdit: false,
+                id: ''
+            });
         } 
     }
 
@@ -301,19 +184,7 @@ class PostDetail extends Component {
             time = new Date(post.timestamp).toDateString();
 
             if (post.commentCount > 0 && comments.length === 0) {
-                fetch(url + '/posts/' + post.id + '/comments', {
-                    method: 'GET',
-                    headers: { 'Authorization': 'readable-aag'}
-                }).then(response => response.json())
-                  .then(comments => {
-                      let newComments = comments.map((comment) => {
-                          return {
-                              [comment.id]: comment
-                          }
-                      });
-                      let acComments = Object.assign({}, ...newComments);
-                      dispatch(getComments(acComments));
-                  });
+                dispatch(receiveComments(post.id));
             }
 
             if (post.commentCount > 1) {

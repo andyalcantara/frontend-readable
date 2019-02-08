@@ -1,5 +1,6 @@
 import { getCategories } from './categories';
 import { getPosts, upVote, downVote, deletePost, editPost, addPost } from './posts';
+import { getComments, editComment, addComment, deleteComment, voteCommentsDown, voteCommentsUp } from './comments';
 
 import { url } from '../utils/helpers';
 
@@ -100,6 +101,88 @@ export function handleNewPost(newPost) {
         }).then(response => response.json())
           .then(data => {
             dispatch(addPost(data));
+          });
+    }
+}
+
+export function receiveComments(id) {
+    return (dispatch) => {
+        return fetch(url + '/posts/' + id + '/comments', {
+            method: 'GET',
+            headers: getHeaders
+        }).then(response => response.json())
+          .then(comments => {
+              let newComments = comments.map((comment) => {
+                  return {
+                      [comment.id]: comment
+                  }
+              });
+              let acComments = Object.assign({}, ...newComments);
+              dispatch(getComments(acComments));
+          });
+    }
+}
+
+export function handleCommentEdit(id, timestamp, body) {
+    return (dispatch) => {
+        return fetch(url + '/comments/' + id, {
+            method: 'PUT',
+            headers: postHeader,
+            body: JSON.stringify({timestamp: timestamp, body: body})
+        }).then(response => response.json())
+          .then(data => {
+              dispatch(editComment(id, data));
+          });
+    }
+}
+
+export function handleNewComment(newComment) {
+    return (dispatch) => {
+        return fetch(url + '/comments', {
+            method: 'POST',
+            headers: postHeader,
+            body: JSON.stringify(newComment)
+        }).then(response => response.json())
+          .then(data => {
+              dispatch(addComment(data));
+          });
+    }
+}
+
+export function handleDeleteComment(id) {
+    return (dispatch) => {
+        return fetch(url + '/comments/' + id, {
+            method: 'DELETE',
+            headers: postHeader
+        }).then(response => response.json())
+          .then(data => {
+                dispatch(deleteComment(id, data.parentId))
+          });
+    }
+}
+
+export function handleVoteUpComment(id) {
+    return (dispatch) => {
+        return fetch(url + '/comments/' + id, {
+            method: 'POST',
+            headers: postHeader,
+            body: JSON.stringify({ option: 'upVote'})
+        }).then(response => response.json())
+          .then(() => {
+              dispatch(voteCommentsUp(id));
+          });
+    }
+}
+
+export function handleVoteDownComment(id) {
+    return (dispatch) => {
+        return fetch(url + '/comments/' + id, {
+            method: 'POST',
+            headers: postHeader,
+            body: JSON.stringify({ option: 'downVote'})
+        }).then(response => response.json())
+          .then(() => {
+              dispatch(voteCommentsDown(id));
           });
     }
 }
