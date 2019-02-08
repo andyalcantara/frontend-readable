@@ -14,10 +14,10 @@ import { handleInitialCategories, handleInitialPosts } from '../actions/shared';
 class App extends Component {
 
   componentDidMount() {
-    const { dispatch } = this.props;
+    const { onReceiveCategories, onReceivePosts } = this.props;
 
-    dispatch(handleInitialCategories());
-    dispatch(handleInitialPosts());
+    onReceiveCategories();
+    onReceivePosts();
   }
 
   render() {
@@ -36,4 +36,15 @@ class App extends Component {
   }
 }
 
-export default connect()(App);
+const mapDispatchToProps = (dispatch) => {
+  return {
+    onReceiveCategories: () => {
+      dispatch(handleInitialCategories());
+    },
+    onReceivePosts: () => {
+      dispatch(handleInitialPosts());
+    }
+  }
+}
+
+export default connect(null, mapDispatchToProps)(App);
