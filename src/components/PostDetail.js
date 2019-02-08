@@ -405,14 +405,14 @@ class PostDetail extends Component {
 }
 
 function mapStateToProps({ posts, comments, categories }, { match }) {
+    
     const { id } = match.params;
     let commentsArray = Object.keys(comments).map(key => comments[key]);
     let acComments = commentsArray.filter(comment => comment.parentId === id);
 
     let links = [];
+
     if (categories['categories'] && posts[id]) {
-        console.log(categories['categories']);
-        console.log(posts[id]);
         links = categories['categories'].filter(cat => cat.name !== posts[id].category);
     }
 

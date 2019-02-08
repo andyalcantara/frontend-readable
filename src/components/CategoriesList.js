@@ -1,12 +1,139 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+
 import Category from './Category';
+import Post from './Post';
 
 import { Link } from 'react-router-dom';
+import { url } from '../utils/helpers';
+
+import { editPost, upVote, downVote, deletePost } from '../actions/posts';
 
 class CategoriesList extends Component {
-    render() {
 
+    state = {
+        showForm: false,
+        title: '',
+        body: '',
+        sortByDate: true,
+        isEdit: false,
+        id: '',
+    }
+
+    handleForm = () => {
+        this.setState((oldState) => ({
+            showForm: !oldState.showForm
+        }));
+    } 
+
+    handleTitle = (e) => {
+        this.setState({
+            title: e.target.value
+        });
+    }
+
+    handleBody = (e) => {
+        this.setState({
+            body: e.target.value
+        });
+    }
+
+    handleSubmit = (e) => {
+        const { title, body, isEdit, id } = this.state;
+        const { dispatch } = this.props;
+
+        e.preventDefault();
+        if (isEdit) {
+            let newPost = {
+                title: title,
+                body: body,
+            }
+            fetch(url + '/posts/' + id, {
+                method: 'PUT',
+                headers: { 
+                    'Authorization': 'readable-aag',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newPost)
+            }).then(response => response.json())
+              .then(data => {
+                  console.log(data);
+                  dispatch(editPost(id, newPost.title, newPost.body));
+                  this.setState({
+                      showForm: false,
+                      title: '',
+                      body: '',
+                      isEdit: false,
+                      id: ''
+                  });
+              })
+        }
+    }
+
+    handleVoteUp = (id) => {
+        const { dispatch } = this.props;
+
+        fetch(url + '/posts/' + id, {
+            method: 'POST',
+            headers: { 
+                'Authorization': 'readable-aag',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({option: 'upVote'})
+        }).then(response => response.json())
+          .then(() => {
+              dispatch(upVote(id));
+          });
+    }
+
+    handleVoteDown = (id) => {
+        const { dispatch } = this.props;
+
+        fetch(url + '/posts/' + id, {
+            method: 'POST',
+            headers: { 
+                'Authorization': 'readable-aag',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({option: 'downVote'})
+        }).then(response => response.json())
+          .then(() => {
+              dispatch(downVote(id));
+          })
+    }
+
+    handleEdit = (id) => {
+        const { storePosts } = this.props;
+
+        if (storePosts) {
+            this.setState({
+                showForm: true,
+                title: storePosts[id].title,
+                body: storePosts[id].body,
+                id: id,
+                isEdit: true
+            });
+        }
+    }
+
+    handleDelete = (id) => {
+        const { dispatch } = this.props;
+
+        fetch(url + '/posts/' + id, {
+            method: 'DELETE',
+            headers: { 
+                'Authorization': 'readable-aag',
+                'Content-Type': 'application/json'
+            }
+        }).then(response => response.json())
+          .then(data => {
+              console.log(data);
+              dispatch(deletePost(id));
+          });
+    }
+
+    render() {
+        const { showForm, title, body } = this.state;
         const { categories, posts } = this.props;
         
         return (
@@ -29,11 +156,31 @@ class CategoriesList extends Component {
                 }
 
                 <h2>All Posts</h2>
+                {showForm 
+                    ?   <div>
+                            <button onClick={() => this.setState({ showForm: false, title: '', body: ''})}>Close</button>
+                            <form onSubmit={this.handleSubmit}  className="post-form">
+                                <label style={{marginTop: 30}}>Title:</label>
+                                <input className="form-title" style={{width: '100%', fontSize: 15}} type="text" value={title} onChange={this.handleTitle} />
+
+                                <label style={{marginTop: 30}}>Body:</label>
+                                <textarea className="form-body" style={{width: '100%', fontSize: 15}} type="text" value={body} onChange={this.handleBody} ></textarea>
+
+                                <button className="form-button" style={{marginTop: 10}} type="submit">Submit</button>
+                            </form>
+                        </div>
+                    : <div></div>
+                }
                 {
                     posts.map((post) => (
-                        <div key={post.id} className="post">
-                            <p style={{marginLeft: 15, padding: 5}}>{post.author} wrote: {post.body}</p>
-                        </div>
+                        <Post 
+                            key={post.id}
+                            post={post}
+                            handleEdit={this.handleEdit}
+                            handleDelete={this.handleDelete}
+                            handleVoteDown={this.handleVoteDown}
+                            handleVoteUp={this.handleVoteUp}
+                        />
                     ))
                 }
             </div>
@@ -42,10 +189,11 @@ class CategoriesList extends Component {
 }
 
 function mapStateToProps({ categories, posts }) {
-    console.log(categories['categories'], 'my categories')
+    
     return {
         categories: categories['categories'],
-        posts: Object.keys(posts).map(key => posts[key])
+        posts: Object.keys(posts).map(key => posts[key]),
+        storePosts: posts,
     }
 }
 
